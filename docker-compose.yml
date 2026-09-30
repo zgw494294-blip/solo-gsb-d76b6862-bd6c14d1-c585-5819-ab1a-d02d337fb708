@@ -1,0 +1,12 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      # persist the SQLite database across container restarts
+      - recovery-data:/data
+    restart: unless-stopped
+
+volumes:
+  recovery-data:
