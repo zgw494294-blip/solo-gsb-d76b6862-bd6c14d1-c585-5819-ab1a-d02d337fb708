@@ -16,7 +16,6 @@ MIN_CLEANUP_IDS = 1
 MAX_PROTECTED_TIMES = 8
 MIN_PROTECTED_TIMES = 1
 
-
 def to_utc(value: datetime) -> datetime:
     """Normalize a datetime to aware UTC. Naive input is assumed to be UTC."""
     if value.tzinfo is None:
@@ -124,3 +123,22 @@ class CleanupIn(BaseModel):
         if duplicates:
             raise ValueError(f"duplicate id(s) in request: {duplicates}; cleanup rejected")
         return self
+
+
+class RecoveryJobIn(BaseModel):
+    """Request to start a recovery job at a given UTC moment.
+
+    The best recovery plan visible at ``at`` is frozen into the job at
+    creation time: the chosen snapshot, the per-segment replay intervals and
+    the recovery endpoint. Later registrations or deletions never alter the
+    stored plan.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    at: datetime
+
+    @field_validator("at")
+    @classmethod
+    def _normalize_at(cls, value: datetime) -> datetime:
+        return to_utc(value)
